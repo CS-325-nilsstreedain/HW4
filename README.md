@@ -46,7 +46,8 @@ Test case 2: MST weight 12
 - A verbal describe of your algorithm and data structures
 - The pseudo-code
 - Theoretical running time
-Submit to TEACH in a zip file
+
+## Submit to TEACH in a zip file
 - mst.c, mst.cpp or mst.py
 - graph.txt
 - solution.txt
