@@ -9,6 +9,8 @@
 #include <fstream>
 #include <utility>
 #include <math.h>
+#include <queue>
+
 
 int getDist(int x1, int x2, int y1, int y2) {
 	int d1 = x1 - x2;
@@ -26,50 +28,50 @@ int main(int argc, const char * argv[]) {
 		int numV;
 		is >> numV;
 		
-		// Parse list of verticies
+		// Parse list of verticies cords
 		std::pair<int, int> v[numV];
 		for (int i = 0; i < numV; i++) {
 			is >> v[i].first;
 			is >> v[i].second;
 		}
 		
-		// Matrix for debug visualization
-		int G[numV][numV];
-		memset(G, 0, sizeof(G));
+		std::vector<std::vector<std::pair<int, int>>> G;
+		G.resize(numV);
+		for (int i = 0; i < numV; i++) {
+			G[i].resize(numV);
+			for (int j = 0; j < numV; j++)
+				G[i][j] = std::make_pair(getDist(v[i].first, v[j].first, v[i].second, v[j].second), j);
+		}
+		
+		std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> pq;
+		
+		pq.push(std::make_pair(0, 0));
+		
+		bool added[numV];
+		memset(added, 0, sizeof(numV));
 		
 		int total = 0;
-		int added[numV];
-		memset(added, -1, sizeof(added));
 		
-		for (int i = 0; i < numV - 1; i++) {
-			int closest = 0;
-			int dist = INT_MAX;
-			for (int j = 0; j < numV; j++) {
-				if (i != added[j] && i != j) {
-					int currDist = getDist(v[i].first, v[j].first, v[i].second, v[j].second);
-					if (currDist < dist) {
-						closest = j;
-						dist = currDist;
-					}
+		while (!pq.empty()) {
+			std::pair<int, int> curr = pq.top();
+			pq.pop();
+			
+			int dist = curr.first;
+			int next = curr.second;
+			
+			if (!added[next]) {
+				total += dist;
+				added[next] = true;
+				
+				for (std::pair<int, int>& adj : G[next]) {
+					int adjNext = adj.second;
+					if (!added[adjNext])
+						pq.push(adj);
 				}
 			}
-			// Populate debug matrix
-			G[i][closest] = dist;
-
-			total += dist;
-
-			added[i] = closest;
 		}
 		
 		printf("Test case %i: MST weight %i\n\n", numCases, total);
-		
-		// Print debug matrix
-		for (int j = 0; j < numV; j++) {
-			for (int k = 0; k < numV; k++)
-				std::cout << G[j][k] << ", ";
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
 	}
 	// Close file after loop
 	is.close();
