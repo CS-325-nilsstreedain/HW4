@@ -7,72 +7,47 @@
 
 #include <iostream>
 #include <fstream>
-#include <utility>
 #include <math.h>
 #include <queue>
 
-
-int getDist(int x1, int x2, int y1, int y2) {
-	int d1 = x1 - x2;
-	int d2 = y1 - y2;
-	return round(sqrt(d1 * d1 + d2 * d2));
-}
-
-int main(int argc, const char * argv[]) {
+int main() {
 	// Open file and loop while not at end
 	std::ifstream is("graph.txt");
 	
+	// Loop over each case in txt file
 	int numCases;
 	is >> numCases;
 	for (int c = 1; c <= numCases; c++) {
 		int numV;
 		is >> numV;
 		
-		// Parse list of verticies cords
+		// Parse list of verticies coordinantes
 		std::pair<int, int> v[numV];
-		for (int i = 0; i < numV; i++) {
-			is >> v[i].first;
-			is >> v[i].second;
-		}
+		for (int i = 0; i < numV; i++)
+			is >> v[i].first >> v[i].second;
 		
-		std::vector<std::vector<std::pair<int, int>>> G;
-		G.resize(numV);
-		for (int i = 0; i < numV; i++) {
-			G[i].resize(numV);
-			for (int j = 0; j < numV; j++)
-				G[i][j] = std::make_pair(getDist(v[i].first, v[j].first, v[i].second, v[j].second), j);
-		}
-		
+		// Create Min Priority Queue of Nodes (distance, adjacent)
 		std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> pq;
 		
+		// Base values for pq while loop
+		int total = 0;
+		bool added[numV];
 		pq.push(std::make_pair(0, 0));
 		
-		bool added[numV];
-		memset(added, 0, sizeof(numV));
-		
-		int total = 0;
-		
-		while (!pq.empty()) {
-			std::pair<int, int> curr = pq.top();
-			pq.pop();
+		// Loop over each Node in queue, starting with those of min distance.
+		for (std::pair<int, int> curr; !pq.empty(); curr = pq.top(), pq.pop()) {
+			int adj = curr.second;
 			
-			int dist = curr.first;
-			int next = curr.second;
-			
-			if (!added[next]) {
-				total += dist;
-				added[next] = true;
+			// If node has not been added to MST, inc total weight
+			if (!added[adj]) {
+				added[adj] = 1;
+				total += curr.first;
 				
-				for (std::pair<int, int>& adj : G[next]) {
-					int adjNext = adj.second;
-					if (!added[adjNext])
-						pq.push(adj);
-				}
+				// Add curr adjacent nodes to queue
+				for (int i = 0; i < numV; i++) if (!added[i])
+					pq.push(std::make_pair(round(hypot(v[i].first - v[adj].first, v[i].second - v[adj].second)), i));
 			}
 		}
-		
-		printf("Test case %i: MST weight %i\n\n", numCases, total);
+		printf("Test case %i: MST weight %i\n\n", c, total);
 	}
-	// Close file after loop
-	is.close();
 }
